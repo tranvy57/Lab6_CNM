@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách các Môn học</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .title {
+            background-color: gray;
+            color: red;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: lightgreen;
+        }
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">Danh sách sản phẩm</div>
+
+    <!-- Form nhập liệu -->
+    <form action="/" method="POST" enctype="multipart/form-dataS">
+        <input type="text" name="ma_sp" placeholder="Mã sản phẩm" required>
+        <input type="text" name="ten_sp" placeholder="Tên sản phẩm" required>
+        <input type="number" name="so_luong" placeholder="Số lượng" required>
+        <button type="submit">Thêm sản phẩm</button>
+    </form>
+
+    <!-- Bảng hiển thị dữ liệu -->
+    <form id="delete" method="POST" action="delete" enctype="multipart/form-data">
+        <div class="title">
+            <h5>Danh sách sản phẩm</h5>
+            <input type="submit" value="Xóa" />
+        </div>
+        <table border="1">
+            <tr>
+                <th>Mã SP</th>
+                <th>Tên SP</th>
+                <th>Số Lượng</th>
+                <th>Chọn</th>
+            </tr>
+            <% for (let i = 0; i < sanPhams.length; i++) { %>
+            <tr>
+                <td><%= sanPhams[i].ma_sp %></td>
+                <td><%= sanPhams[i].ten_sp %></td>
+                <td><%= sanPhams[i].so_luong %></td>
+                <td><input type="checkbox" name="<%= sanPhams[i].ma_sp %>" /></td>
+            </tr>
+            <% } %>
+        </table>
+    </form>
+
+</body>
+</html>
