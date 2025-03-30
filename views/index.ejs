@@ -43,11 +43,13 @@
     <div class="title">Danh sách sản phẩm</div>
 
     <!-- Form nhập liệu -->
-    <form action="/" method="POST" enctype="multipart/form-dataS">
+    <form action="/" method="POST" enctype="multipart/form-data">
         <input type="text" name="ma_sp" placeholder="Mã sản phẩm" required>
         <input type="text" name="ten_sp" placeholder="Tên sản phẩm" required>
         <input type="number" name="so_luong" placeholder="Số lượng" required>
+        <input type="file" name="image"/>
         <button type="submit">Thêm sản phẩm</button>
+        
     </form>
 
     <!-- Bảng hiển thị dữ liệu -->
@@ -61,6 +63,7 @@
                 <th>Mã SP</th>
                 <th>Tên SP</th>
                 <th>Số Lượng</th>
+                <th>Hình ảnh</th>
                 <th>Chọn</th>
             </tr>
             <% for (let i = 0; i < sanPhams.length; i++) { %>
@@ -68,6 +71,7 @@
                 <td><%= sanPhams[i].ma_sp %></td>
                 <td><%= sanPhams[i].ten_sp %></td>
                 <td><%= sanPhams[i].so_luong %></td>
+                <td><img width="50px" src="<%= sanPhams[i].image_url %>" /></td>
                 <td><input type="checkbox" name="<%= sanPhams[i].ma_sp %>" /></td>
             </tr>
             <% } %>

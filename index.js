@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const path = require('path')
+const {v4: uuid} = require('uuid')
 
 app.use(express.json({extended: false}));  
 app.use(express.static('./views'))
@@ -14,14 +16,40 @@ const config = new AWS.Config({
     region: 'ap-southeast-1'
 })
 AWS.config = config;
+const s3 = new AWS.S3()
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 const tableName = 'zytable'
 
-const multer = require('multer');
+const multer = require("multer");
 
-const upload = multer()
+const storage = multer.memoryStorage({
+    destination(req, file, callback) {
+        callback(null, "");
+    },
+});
+
+function checkFileType(file, cb) {
+    const fileTypes = /jpeg|jpg|png|gif/;
+
+    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = fileTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+        return cb(null, true);
+    }
+
+    return cb("Error: Image Only");
+}
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 2000000 }, // 2MB
+    fileFilter(req, file, cb) {
+        checkFileType(file, cb);
+    },
+});
 
 app.get('/', (req, res) => {
     const params = {
@@ -38,28 +66,47 @@ app.get('/', (req, res) => {
     })
 });
 
+const CLOUD_FRONT_URL = '<>';
 
-app.post('/', upload.fields([]), (req, res) => {
+app.post('/', upload.single('image'), (req, res) => {
     const { ma_sp, ten_sp, so_luong } = req.body;
+    const image = req.file.originalname.split(".");
+
+    const fileType = image[image.length-1];
+
+    const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
 
     const params = {
-        TableName: tableName,
-        Item: {
-            "ma_sp": ma_sp,
-            "ten_sp": ten_sp,
-            "so_luong": so_luong
+        Bucket: "zybuckett",
+        Key: filePath,
+        Body: req.file.buffer
+    }
+
+    s3.upload(params, (error, data) => {
+        if(error){
+            console.log("error=", error);
+            return res.send("Internal Server Error");
+        }else{
+            const newItem = {
+                TableName: tableName,
+                Item: {
+                    "ma_sp": ma_sp,
+                    "ten_sp": ten_sp,
+                    "so_luong": so_luong,
+                    "image_url":`${CLOUD_FRONT_URL}/${filePath}`
+                }
+            };
+            docClient.put(newItem, (err, data) => {
+                if(err) {
+                    res.send(err);
+                } else {
+                    res.redirect('/');
+                }
+            });
         }
-    };
+    })    
 
-    docClient.put(params, (err, data) => {
-        if (err) {
-
-            return res.send(params);
-
-        } else {
-            return res.redirect("/");
-        }
-    });
+    
 });
 
 app.post("/delete", upload.fields([]), async (req, res) => {
